@@ -24,6 +24,8 @@ from homeassistant.components.climate.const import (
     SUPPORT_FAN_MODE,
     SUPPORT_PRESET_MODE,
     SUPPORT_SWING_MODE,
+    SUPPORT_TARGET_HUMIDITY,
+    ATTR_HUMIDITY,
 )
 from homeassistant.const import ATTR_TEMPERATURE, CONF_HOST, CONF_NAME, TEMP_CELSIUS
 import homeassistant.helpers.config_validation as cv
@@ -114,10 +116,12 @@ class DaikinClimate(ClimateEntity):
         if self._device.support_swing_mode:
             self._supported_features |= SUPPORT_SWING_MODE
 
+        self._supported_features |= SUPPORT_TARGET_HUMIDITY
+
     async def _set(self, settings):
         """Set device settings using API."""
         values = {}
-
+        _LOGGER.info(f"SETTINGS: {settings}")
         for attr in [ATTR_TEMPERATURE, ATTR_FAN_MODE, ATTR_SWING_MODE, ATTR_HVAC_MODE]:
             value = settings.get(attr)
             if value is None:
@@ -203,6 +207,33 @@ class DaikinClimate(ClimateEntity):
             await self.async_set_hvac_mode(kwargs[ATTR_HVAC_MODE])
 
         await self._device.async_set_temperature(kwargs[ATTR_TEMPERATURE])
+    
+    @property
+    def min_humidity(self):
+        """Return the maximum demand control value we are allowed to set."""
+        return self._device.min_demand_control
+
+    @property
+    def max_humidity(self):
+        """Return the maximum demand control value we are allowed to set."""
+        return self._device.max_demand_control
+    
+    @property
+    def current_humidity(self):
+        """Return the current demand control value."""
+        return self._device.target_demand_control
+    
+    @property
+    def target_humidity(self):
+        """Return the current demand control value."""
+        return self._device.target_demand_control
+
+    async def async_set_humidity(self, **kwargs):
+        """Set new target demand control value."""
+        value = kwargs[ATTR_HUMIDITY]
+        base = self._device.target_demand_control_step
+        value = int(base * round(value / base))
+        await self._device.async_set_demand_control(value)
 
     @property
     def hvac_mode(self):

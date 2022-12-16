@@ -12,6 +12,7 @@ from .const import (
     ATTR_STATE_OFF,
     ATTR_STATE_ON,
     ATTR_TARGET_TEMPERATURE,
+    ATTR_TARGET_DEMAND_CONTROL,
     FAN_QUIET,
     SWING_OFF,
     SWING_BOTH,
@@ -192,7 +193,7 @@ class Appliance(DaikinResidentialDevice):  # pylint: disable=too-many-public-met
             fanMode = DAIKIN_FAN_TO_HA[fanMode]
         else:
             fanMode = self.getValue(ATTR_FAN_SPEED)
-        return fanMode
+        return str(fanMode)
 
     @property
     def fan_modes(self):
@@ -216,6 +217,7 @@ class Appliance(DaikinResidentialDevice):  # pylint: disable=too-many-public-met
             return await self.setValue(ATTR_FAN_MODE, HA_FAN_TO_DAIKIN[mode])
         if mode.isnumeric():
             mode = int(mode)
+        await self.setValue(ATTR_FAN_MODE, "fixed")
         return await self.setValue(ATTR_FAN_SPEED, mode)
 
     @property
@@ -331,6 +333,38 @@ class Appliance(DaikinResidentialDevice):  # pylint: disable=too-many-public-met
         if operationMode not in ["auto", "cooling", "heating"]:
             return None
         return float(self.getData(ATTR_TARGET_TEMPERATURE)["stepValue"])
+    
+    @property
+    def max_demand_control(self):
+        """Return the maximum demand control value we are allowed to set."""
+        operationMode = self.getValue(ATTR_OPERATION_MODE)
+        if operationMode not in ["auto", "cooling", "heating"]:
+            return 100
+        return float(self.getData(ATTR_TARGET_DEMAND_CONTROL)["maxValue"])
+    
+    @property
+    def min_demand_control(self):
+        """Return the minimum demand control value we are allowed to set."""
+        operationMode = self.getValue(ATTR_OPERATION_MODE)
+        if operationMode not in ["auto", "cooling", "heating"]:
+            return 100
+        return float(self.getData(ATTR_TARGET_DEMAND_CONTROL)["minValue"])
+    
+    @property
+    def target_demand_control(self):
+        """Return current target demand control value."""
+        operationMode = self.getValue(ATTR_OPERATION_MODE)
+        if operationMode not in ["auto", "cooling", "heating"]:
+            return None
+        return float(self.getValue(ATTR_TARGET_DEMAND_CONTROL))
+
+    @property
+    def target_demand_control_step(self):
+        """Return demandControl step size."""
+        operationMode = self.getValue(ATTR_OPERATION_MODE)
+        if operationMode not in ["auto", "cooling", "heating"]:
+            return None
+        return float(self.getData(ATTR_TARGET_DEMAND_CONTROL)["stepValue"])
 
     async def async_set_temperature(self, value):
         """Set new target temperature."""
@@ -338,6 +372,13 @@ class Appliance(DaikinResidentialDevice):  # pylint: disable=too-many-public-met
         if operationMode not in ["auto", "cooling", "heating"]:
             return None
         return await self.setValue(ATTR_TARGET_TEMPERATURE, value)
+    
+    async def async_set_demand_control(self, value):
+        """Set new target demand control."""
+        operationMode = self.getValue(ATTR_OPERATION_MODE)
+        if operationMode not in ["auto", "cooling", "heating"]:
+            return None
+        return await self.setValue(ATTR_TARGET_DEMAND_CONTROL, value)
 
     @property
     def support_energy_consumption(self):
