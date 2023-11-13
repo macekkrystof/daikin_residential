@@ -280,12 +280,12 @@ class Appliance(DaikinResidentialDevice):  # pylint: disable=too-many-public-met
     @property
     def support_room_humidity(self):
         """Return True if the device has humidity sensor."""
-        return self.getData(ATTR_ROOM_HUMIDITY) is not None
+        return self.getData(ATTR_TARGET_DEMAND_CONTROL) is not None
 
     @property
     def room_humidity(self):
         """Return current room humidity."""
-        return self.getValue(ATTR_ROOM_HUMIDITY) if self.support_room_humidity else None
+        return self.getValue(ATTR_TARGET_DEMAND_CONTROL) if self.support_room_humidity else None
 
     @property
     def support_inside_temperature(self):
