@@ -39,6 +39,8 @@ ATTR_LOCAL_SSID = "local_ssid"
 ATTR_MAC_ADDRESS = "mac_address"
 ATTR_SERIAL_NUMBER = "serial_number"
 ATTR_ENERGY_CONSUMPTION = "energy_consumption"
+ATTR_DEMAND_CONTROL = "demand_control"
+ATTR_TARGET_DEMAND_CONTROL = "target_demand_control"
 ATTR_ROOM_HUMIDITY = "room_humidity"
 ATTR_TARGET_HUMIDITY = "target_humidity"
 ATTR_FAN_MODE = "fan_mode"
@@ -57,6 +59,7 @@ DP_ON_OFF = "onOffMode"
 DP_OPERATION_MODE = "operationMode"
 DP_SENSORS = "sensoryData"
 DP_TEMPERATURE = "temperatureControl"
+DP_DEMANDCONTROL = "demandControl"
 DP_FAN = "fanControl"
 DP_CONSUMPTION = "consumptionData"
 DP_WIFI_STRENGTH = "wifiConnectionStrength"
@@ -76,6 +79,11 @@ DAIKIN_CMD_SETS = {
         MP_CLIMATE,
         DP_TEMPERATURE,
         "/operationModes/%operationMode%/setpoints/roomTemperature",
+    ],
+    ATTR_TARGET_DEMAND_CONTROL: [
+        MP_CLIMATE,
+        DP_DEMANDCONTROL,
+        "/modes/fixed",
     ],
     ATTR_FAN_MODE: [
         MP_CLIMATE,
